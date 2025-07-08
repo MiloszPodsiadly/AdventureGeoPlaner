@@ -130,6 +130,9 @@ server:
 
 debug: true
 
+jwt:
+  secret: globalJwtSecret12345678901234567890
+
 nominatim:
   user-agent: trip-planner-test/1.0 (test@mydomain.com)
 
