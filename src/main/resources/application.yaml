@@ -104,7 +104,7 @@ spring:
     name: tripplanner-test
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+    url: jdbc:postgresql://localhost:5432/AdventureGeoPlanner
     username: GeoPlanner
     password: AdventurePlan
 
