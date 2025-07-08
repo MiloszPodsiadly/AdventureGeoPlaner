@@ -1,6 +1,8 @@
 package com.milosz.podsiadly.security.spotify;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.milosz.podsiadly.config.SpotifyProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -8,24 +10,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Base64;
 
 @Component
+@RequiredArgsConstructor
 public class SpotifyAuthService {
 
-    private final WebClient webClient;
-    private final String clientId;
-    private final String clientSecret;
-
-    public SpotifyAuthService(
-            @Value("${spotify.client-id}") String clientId,
-            @Value("${spotify.client-secret}") String clientSecret
-    ) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.webClient = WebClient.create("https://accounts.spotify.com");
-    }
+    private final WebClient webClient = WebClient.create("https://accounts.spotify.com");
+    private final SpotifyProperties spotifyProperties;
 
     public String getAccessToken() {
         String credentials = Base64.getEncoder()
-                .encodeToString((clientId + ":" + clientSecret).getBytes());
+                .encodeToString((spotifyProperties.getClientId() + ":" + spotifyProperties.getClientSecret()).getBytes());
 
         return webClient.post()
                 .uri("/api/token")
