@@ -1,27 +1,70 @@
-debug: true
+spring:
+  profiles:
+    active: dev  # domyślny profil
 
-server:
-  port: 8080
+  application:
+    name: tripplanner
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+
+  jackson:
+    serialization:
+      indent_output: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          spotify:
+            authorization-grant-type: authorization_code
+            scope: user-read-email, playlist-read-private
+            client-name: Spotify
+        provider:
+          spotify:
+            authorization-uri: https://accounts.spotify.com/authorize
+            token-uri: https://accounts.spotify.com/api/token
+            user-info-uri: https://api.spotify.com/v1/me
+            user-name-attribute: id
 
 jwt:
-  secret: superTajnyKluczJWT12345678901234567890
+  secret: globalJwtSecret12345678901234567890
+
+springdoc:
+  swagger-ui:
+    enabled: false
+
+nominatim:
+  base-url: https://nominatim.openstreetmap.org
+  user-agent: trip-planner/1.0 (common@mydomain.com)
+
+---
 
 spring:
+  config:
+    activate:
+      on-profile: dev
+
   application:
-    name: tripplanner-backend
+    name: tripplanner-dev
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+    url: jdbc:postgresql://localhost:5432/AdventureGeoPlanner
     username: GeoPlanner
     password: AdventurePlan
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
   jackson:
@@ -35,38 +78,89 @@ spring:
           spotify:
             client-id: d9a786a96ea44f9bbfa5228457b11589
             client-secret: 1c7be3850109498f953b58e9cde315bc
-            authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/spotify
-            scope: user-read-email, playlist-read-private
-            client-name: Spotify
-        provider:
-          spotify:
-            authorization-uri: https://accounts.spotify.com/authorize
-            token-uri: https://accounts.spotify.com/api/token
-            user-info-uri: https://api.spotify.com/v1/me
-            user-name-attribute: id
 
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    com.milosz: DEBUG
+server:
+  port: 8080
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+debug: true
 
 springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
 
-spotify:
-  client-id: d9a786a96ea44f9bbfa5228457b11589
-  client-secret: 1c7be3850109498f953b58e9cde315bc
+nominatim:
+  user-agent: trip-planner-dev/1.0 (dev@mydomain.com)
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  application:
+    name: tripplanner-test
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+    username: GeoPlanner
+    password: AdventurePlan
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          spotify:
+            client-id: d9a786a96ea44f9bbfa5228457b11589
+            client-secret: 1c7be3850109498f953b58e9cde315bc
+            redirect-uri: http://localhost:8080/login/oauth2/code/spotify
+
+server:
+  port: 8081
+
+debug: true
 
 nominatim:
-  base-url: https://nominatim.openstreetmap.org
-  user-agent: trip-planer/1.0 (admin@mydomain.com)
+  user-agent: trip-planner-test/1.0 (test@mydomain.com)
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  application:
+    name: tripplanner-docker
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+    username: GeoPlanner
+    password: AdventurePlan
+
+  security:
+    oauth2:
+      client:
+        registration:
+          spotify:
+            client-id: d9a786a96ea44f9bbfa5228457b11589
+            client-secret: 1c7be3850109498f953b58e9cde315bc
+            redirect-uri: http://localhost:8080/login/oauth2/code/spotify
+
+server:
+  port: 8080
+
+debug: false
+
+nominatim:
+  user-agent: trip-planner-docker/1.0 (docker@mydomain.com)
