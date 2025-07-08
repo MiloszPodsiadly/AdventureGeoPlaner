@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: AdventureGeoPlanner-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: AdventureGeoPlanner
+      POSTGRES_USER: GeoPlanner
+      POSTGRES_PASSWORD: AdventurePlan
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tripplanner-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tripplanner-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+      SPRING_DATASOURCE_USERNAME: GeoPlanner
+      SPRING_DATASOURCE_PASSWORD: AdventurePlan
+    networks:
+      - tripplanner-network
+
+volumes:
+  postgres_data:
+
+networks:
+  tripplanner-network:
