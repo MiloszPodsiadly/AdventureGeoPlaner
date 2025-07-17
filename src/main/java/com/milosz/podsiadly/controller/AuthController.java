@@ -78,7 +78,7 @@ public class AuthController {
      * upsert the User in our DB (offloaded to boundedElastic),
      * then issue our own JWT.
      */
-    @GetMapping("/callback")
+    @GetMapping("/success")
     public Mono<ResponseEntity<String>> callback(
             @RequestParam String code,
             @RequestParam String state
