@@ -4,33 +4,33 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "spotify_playlists") // Or whatever table name you prefer
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Table(name = "spotify_playlists")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class SpotifyPlaylist {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private Long      id;
 
-    @Column(name = "spotify_id", unique = true)
-    private String spotifyId; // Spotify's unique ID for the playlist
+    // the Spotify PK for this playlist
+    @Column(unique = true, nullable = false)
+    private String    spotifyId;
 
-    private String name;
-    private String description;
-    private Boolean isPublic; // Renamed to isPublic to avoid keyword conflict, if any
-    private Boolean collaborative;
-    private String ownerDisplayName;
-    private String ownerSpotifyId;
-    private String externalUrl; // Link to the playlist on Spotify
-    private String imageUrl; // URL of the playlist's cover image
+    private String    name;
+    private String    description;
+    private Boolean   isPublic;
+    private Boolean   collaborative;
+    private String    snapshotId;
+    private Integer   trackCount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user; // Link to your internal User entity
+    private String    ownerSpotifyId;
+    private String    ownerDisplayName;
+
+    private String    externalUrl;
+    private String    imageUrl;
+
+    // link back to your own User
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private User      user;
 
     // You might add a list of tracks, but that gets more complex (many-to-many relationship)
     // private List<SpotifyTrack> tracks;

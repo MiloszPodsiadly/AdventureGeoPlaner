@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,20 +29,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtAuthenticationFilter jwtFilter) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth2/**", "/login/**", "/auth/spotify/success").permitAll()
+                        // leave your OAuth endpoints open
+                        .requestMatchers("/oauth2/**",
+                                "/login/**",
+                                "/auth/spotify/**").permitAll()
+                        // for now also open your API
+                        .requestMatchers("/api/**").permitAll()
+                        // everything else still needs auth
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/auth/spotify/success", true)
-                        .failureUrl("/login?error")
-                )
-                .logout(logout -> logout.logoutSuccessUrl("/").permitAll());
+                // you can even disable OAuth2 login if you just want to
+                // smoke‑test your API without any security
+                .oauth2Login(AbstractHttpConfigurer::disable)
+                .logout(logout -> logout.disable());
 
-        // ✅ DODAJ to, żeby Twój JwtAuthenticationFilter był wywoływany przed domyślnym:
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        // you can skip adding the JWT filter while you’re testing
+        // http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

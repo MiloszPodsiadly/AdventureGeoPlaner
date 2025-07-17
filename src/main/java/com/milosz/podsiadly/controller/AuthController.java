@@ -73,7 +73,7 @@ public class AuthController {
     }
 
     /**
-     * STEP 2: Spotify calls back here with ?code=...&state=...
+     * STEP 2: Spotify calls back here with ?c  ode=...&state=...
      * We exchange the code for tokens, fetch the user profile,
      * upsert the User in our DB (offloaded to boundedElastic),
      * then issue our own JWT.

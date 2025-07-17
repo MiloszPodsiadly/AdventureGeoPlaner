@@ -106,25 +106,74 @@ public class SpotifyPlaylistService {
     @Transactional
     public List<SpotifyPlaylist> importPlaylistsForUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new EntityNotFoundException("User " + userId));
 
-        String token = getValidAccessToken(user);
-        JsonNode root = spotifyWebClient.get()
+        // 1) call /me/playlists
+        JsonNode root = spotifyWebClient
+                .get()
                 .uri("/me/playlists?limit=50")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
 
-        List<SpotifyPlaylist> imported = parseSpotifyPlaylists(root, user);
-        for (SpotifyPlaylist p : imported) {
-            Optional<SpotifyPlaylist> existing = spotifyPlaylistRepository.findBySpotifyId(p.getSpotifyId());
-            SpotifyPlaylist toSave = existing
-                    .map(e -> updateExistingPlaylist(e, p))
-                    .orElse(p);
-            spotifyPlaylistRepository.save(toSave);
+        List<SpotifyPlaylist> saved = new ArrayList<>();
+
+        // 2) for each "item" map → entity → upsert
+        for (JsonNode item : root.path("items")) {
+            String sid     = item.path("id").asText();
+            String name    = item.path("name").asText(null);
+            String desc    = item.path("description").asText(null);
+            boolean pub    = item.path("public").asBoolean(false);
+            boolean collab = item.path("collaborative").asBoolean(false);
+            String snap    = item.path("snapshot_id").asText(null);
+            int    count   = item.path("tracks").path("total").asInt(0);
+
+            String ownerId   = item.path("owner").path("id").asText(null);
+            String ownerName = item.path("owner").path("display_name").asText(null);
+
+            String extUrl = item.path("external_urls").path("spotify").asText(null);
+            String imgUrl = null;
+            JsonNode images = item.path("images");
+            if (images.isArray() && !images.isEmpty()) {
+                imgUrl = images.get(0).path("url").asText(null);
+            }
+
+            SpotifyPlaylist pl = SpotifyPlaylist.builder()
+                    .spotifyId(sid)
+                    .name(name)
+                    .description(desc)
+                    .isPublic(pub)
+                    .collaborative(collab)
+                    .snapshotId(snap)
+                    .trackCount(count)
+                    .ownerSpotifyId(ownerId)
+                    .ownerDisplayName(ownerName)
+                    .externalUrl(extUrl)
+                    .imageUrl(imgUrl)
+                    .user(user)
+                    .build();
+
+            // upsert by spotifyId
+            SpotifyPlaylist persisted = spotifyPlaylistRepository.findBySpotifyId(sid)
+                    .map(existing -> {
+                        existing.setName(pl.getName());
+                        existing.setDescription(pl.getDescription());
+                        existing.setIsPublic(pl.getIsPublic());
+                        existing.setCollaborative(pl.getCollaborative());
+                        existing.setSnapshotId(pl.getSnapshotId());
+                        existing.setTrackCount(pl.getTrackCount());
+                        existing.setOwnerSpotifyId(pl.getOwnerSpotifyId());
+                        existing.setOwnerDisplayName(pl.getOwnerDisplayName());
+                        existing.setExternalUrl(pl.getExternalUrl());
+                        existing.setImageUrl(pl.getImageUrl());
+                        return spotifyPlaylistRepository.save(existing);
+                    })
+                    .orElseGet(() -> spotifyPlaylistRepository.save(pl));
+
+            saved.add(persisted);
         }
-        return imported;
+
+        return saved;
     }
 
     /** Helper to update fields on an existing playlist. */
@@ -217,4 +266,51 @@ public class SpotifyPlaylistService {
         }
         return result;
     }
+
+    @Transactional
+    public SpotifyPlaylist importSinglePlaylist(Long userId, String spotifyPlaylistId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
+
+        // 1) Grab that one playlist
+        JsonNode node = spotifyWebClient.get()
+                .uri("/playlists/{id}", spotifyPlaylistId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getValidAccessToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (node == null || !node.has("id")) {
+            throw new EntityNotFoundException("Spotify playlist not found: " + spotifyPlaylistId);
+        }
+
+        // 2) Map to your entity
+        SpotifyPlaylist p = new SpotifyPlaylist();
+        p.setSpotifyId(node.get("id").asText());
+        p.setName(node.path("name").asText(null));
+        p.setDescription(node.path("description").asText(null));
+        p.setIsPublic(node.path("public").asBoolean(false));
+        p.setCollaborative(node.path("collaborative").asBoolean(false));
+        p.setOwnerDisplayName(node.path("owner").path("display_name").asText(null));
+        p.setOwnerSpotifyId(node.path("owner").path("id").asText(null));
+        p.setExternalUrl(node.path("external_urls").path("spotify").asText(null));
+        JsonNode imgs = node.path("images");
+        if (imgs.isArray() && !imgs.isEmpty()) {
+            p.setImageUrl(imgs.get(0).path("url").asText(null));
+        }
+        p.setUser(user);
+
+        // 3) Upsert into your DB
+        return spotifyPlaylistRepository.findBySpotifyId(p.getSpotifyId())
+                .map(existing -> {
+                    // update fields if you wish…
+                    existing.setName(p.getName());
+                    existing.setDescription(p.getDescription());
+                    existing.setExternalUrl(p.getExternalUrl());
+                    // …etc…
+                    return spotifyPlaylistRepository.save(existing);
+                })
+                .orElseGet(() -> spotifyPlaylistRepository.save(p));
+    }
 }
+
