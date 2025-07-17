@@ -1,6 +1,14 @@
+# ── Top‑level Spotify URLs for EVERY profile ──
+spotify:
+  token-url: https://accounts.spotify.com/api/token
+  api-url:   https://api.spotify.com/v1
+
+---
+
+# ── Default profile (you can leave this as dev, docker, or remove altogether) ──
 spring:
   profiles:
-    active: dev  # domyślny profil
+    active: docker
 
   application:
     name: tripplanner
@@ -24,12 +32,12 @@ spring:
         registration:
           spotify:
             authorization-grant-type: authorization_code
-            scope: user-read-email, playlist-read-private
+            scope: user-read-email,playlist-read-private
             client-name: Spotify
         provider:
           spotify:
             authorization-uri: https://accounts.spotify.com/authorize
-            token-uri: https://accounts.spotify.com/api/token
+            token-uri:     https://accounts.spotify.com/api/token
             user-info-uri: https://api.spotify.com/v1/me
             user-name-attribute: id
 
@@ -46,6 +54,7 @@ nominatim:
 
 ---
 
+# ── DEV profile ──
 spring:
   config:
     activate:
@@ -56,8 +65,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/AdventureGeoPlanner
-    username: GeoPlanner
-    password: AdventurePlan
+    username: kodilla_user
+    password: kodilla_password
 
   jpa:
     hibernate:
@@ -76,9 +85,9 @@ spring:
       client:
         registration:
           spotify:
-            client-id: d9a786a96ea44f9bbfa5228457b11589
+            client-id:     d9a786a96ea44f9bbfa5228457b11589
             client-secret: 1c7be3850109498f953b58e9cde315bc
-            redirect-uri: http://localhost:8080/login/oauth2/code/spotify
+            redirect-uri:  http://127.0.0.1:8080/auth/spotify/success
 
 server:
   port: 8080
@@ -95,6 +104,7 @@ nominatim:
 
 ---
 
+# ── TEST profile ──
 spring:
   config:
     activate:
@@ -105,8 +115,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/AdventureGeoPlanner
-    username: GeoPlanner
-    password: AdventurePlan
+    username: kodilla_user
+    password: kodilla_password
 
   jpa:
     hibernate:
@@ -121,9 +131,9 @@ spring:
       client:
         registration:
           spotify:
-            client-id: d9a786a96ea44f9bbfa5228457b11589
+            client-id:     d9a786a96ea44f9bbfa5228457b11589
             client-secret: 1c7be3850109498f953b58e9cde315bc
-            redirect-uri: http://localhost:8080/login/oauth2/code/spotify
+            redirect-uri:  http://127.0.0.1:8080/auth/spotify/success
 
 server:
   port: 8081
@@ -138,6 +148,7 @@ nominatim:
 
 ---
 
+# ── DOCKER profile ──
 spring:
   config:
     activate:
@@ -148,17 +159,25 @@ spring:
 
   datasource:
     url: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
-    username: GeoPlanner
-    password: AdventurePlan
+    username: kodilla_user
+    password: kodilla_password
 
   security:
     oauth2:
       client:
         registration:
           spotify:
-            client-id: d9a786a96ea44f9bbfa5228457b11589
+            client-id:     d9a786a96ea44f9bbfa5228457b11589
             client-secret: 1c7be3850109498f953b58e9cde315bc
-            redirect-uri: http://localhost:8080/login/oauth2/code/spotify
+            redirect-uri:  http://127.0.0.1:8080/auth/spotify/success
+            authorization-grant-type: authorization_code
+            scope: user-read-email,playlist-read-private
+        provider:
+          spotify:
+            authorization-uri:  https://accounts.spotify.com/authorize
+            token-uri:          https://accounts.spotify.com/api/token
+            user-info-uri:      https://api.spotify.com/v1/me
+            user-name-attribute: id
 
 server:
   port: 8080

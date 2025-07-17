@@ -5,7 +5,10 @@ public record SpotifyPlaylistDto(
         String spotifyId,
         String name,
         String description,
-        String imageUrl,
+        Boolean isPublic,
+        Boolean collaborative,
+        String ownerDisplayName,
+        String ownerSpotifyId,
         String externalUrl,
-        Long userId
+        String imageUrl
 ) {}

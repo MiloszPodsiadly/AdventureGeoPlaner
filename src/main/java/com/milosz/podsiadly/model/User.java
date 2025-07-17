@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     @Id
@@ -42,6 +44,15 @@ public class User {
     private String provider; // SPOTIFY, GOOGLE, etc.
 
     private String role; // USER, ADMIN
+
+    @Column(name = "spotify_access_token", length = 1000) // Access tokens can be long
+    private String spotifyAccessToken;
+
+    @Column(name = "spotify_refresh_token", length = 1000) // Refresh tokens can also be long
+    private String spotifyRefreshToken;
+
+    @Column(name = "spotify_token_expires_at")
+    private Instant spotifyTokenExpiresAt; // Use Instant to store the expiration timestamp
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TripPlan> tripPlans;

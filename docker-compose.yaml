@@ -1,3 +1,4 @@
+# docker-compose.yml
 version: '3.8'
 
 services:
@@ -9,8 +10,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: AdventureGeoPlanner
-      POSTGRES_USER: GeoPlanner
-      POSTGRES_PASSWORD: AdventurePlan
+      POSTGRES_USER: kodilla_user
+      POSTGRES_PASSWORD: kodilla_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -26,9 +27,13 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/AdventureGeoPlanner
-      SPRING_DATASOURCE_USERNAME: GeoPlanner
-      SPRING_DATASOURCE_PASSWORD: AdventurePlan
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/AdventureGeoPlanner
+      - SPRING_DATASOURCE_USERNAME=kodilla_user
+      - SPRING_DATASOURCE_PASSWORD=kodilla_password
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPOTIFY_CLIENT_ID=1c7be3850109498f953b58e9cde315bc
+      - SPOTIFY_CLIENT_SECRET=d9a786a96ea44f9bbfa5228457b11589
     networks:
       - tripplanner-network
 

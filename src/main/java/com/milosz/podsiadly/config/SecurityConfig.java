@@ -26,23 +26,26 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtAuthenticationFilter jwtFilter) throws Exception {
+
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/oauth2/**", "/login/**", "/callback").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/oauth2/**", "/login/**", "/auth/spotify/success").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth -> oauth
-                        .successHandler(oauth2LoginSuccessHandler)
-                );
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/auth/spotify/success", true)
+                        .failureUrl("/login?error")
+                )
+                .logout(logout -> logout.logoutSuccessUrl("/").permitAll());
 
+        // ✅ DODAJ to, żeby Twój JwtAuthenticationFilter był wywoływany przed domyślnym:
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -63,4 +66,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

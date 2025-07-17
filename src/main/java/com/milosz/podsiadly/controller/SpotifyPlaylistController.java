@@ -1,8 +1,8 @@
 package com.milosz.podsiadly.controller;
 
-import com.milosz.podsiadly.dto.SpotifyPlaylistDto;
+import com.milosz.podsiadly.dto.SpotifyPlaylistDto; // Import the new DTO record
 import com.milosz.podsiadly.mapper.SpotifyPlaylistMapper;
-import com.milosz.podsiadly.model.SpotifyPlaylist;
+import com.milosz.podsiadly.model.SpotifyPlaylist; // Still needed for @RequestBody in create method
 import com.milosz.podsiadly.service.SpotifyPlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,7 @@ public class SpotifyPlaylistController {
 
     @GetMapping
     public ResponseEntity<List<SpotifyPlaylistDto>> getAll() {
+        // The service returns entities, the mapper converts them to DTOs for the response
         var result = SpotifyPlaylistMapper.mapToDtoList(playlistService.getAll());
         return ResponseEntity.ok(result);
     }
@@ -38,14 +39,17 @@ public class SpotifyPlaylistController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<SpotifyPlaylistDto> create(
             @PathVariable Long userId,
-            @RequestBody SpotifyPlaylist playlist
+            @RequestBody SpotifyPlaylist playlist // Still takes entity or a specific DTO for creation
     ) {
+        // If you want to accept a DTO for creation, you'd change @RequestBody SpotifyPlaylist playlist
+        // to @RequestBody SpotifyPlaylistCreationDto dto, and then map dto to entity in the service.
         var created = playlistService.createPlaylist(userId, playlist);
         return ResponseEntity.ok(SpotifyPlaylistMapper.mapToDto(created));
     }
 
     @PostMapping("/user/{userId}/import")
     public ResponseEntity<List<SpotifyPlaylistDto>> importFromSpotify(@PathVariable Long userId) {
+        // This method in service already returns entities, which are then mapped to DTOs
         var imported = playlistService.importPlaylistsForUser(userId);
         return ResponseEntity.ok(SpotifyPlaylistMapper.mapToDtoList(imported));
     }
