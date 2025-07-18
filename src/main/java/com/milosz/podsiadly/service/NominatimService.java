@@ -42,7 +42,7 @@ public class NominatimService {
         TripPlan trip = tripPlanRepository.findById(tripPlanId)
                 .orElseThrow(() -> new IllegalArgumentException("TripPlan not found: " + tripPlanId));
 
-        // 1) fetch JSON array from /search?q=tourist attractions in {city}&format=json&limit={limit}
+        // 1) fetch JSON array
         List<JsonNode> hits = nominatimClient.get()
                 .uri(uri -> uri
                         .path("/search")
@@ -55,7 +55,14 @@ public class NominatimService {
                 .retrieve()
                 .bodyToFlux(JsonNode.class)
                 .collectList()
-                .block();
+                .blockOptional()
+                .orElse(List.of());
+
+        // if no hits, we’ll simply return an empty list
+        if (hits.isEmpty()) {
+            trip.getPlaces().clear();
+            return List.of();
+        }
 
         // 2) map each hit → Place entity
         List<Place> places = IntStream.range(0, hits.size())
@@ -77,9 +84,10 @@ public class NominatimService {
                 })
                 .toList();
 
-        // 3) clear old places & save new ones
+        // 3) clear old & save new
         trip.getPlaces().clear();
         trip.getPlaces().addAll(places);
         return placeRepository.saveAll(places);
     }
+
 }
