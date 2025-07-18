@@ -4,6 +4,7 @@ import com.milosz.podsiadly.dto.UserDto;
 import com.milosz.podsiadly.mapper.UserMapper;
 import com.milosz.podsiadly.model.User;
 import com.milosz.podsiadly.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +37,16 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody User user) {
-        User created = userService.createUser(user);
-        return ResponseEntity.ok(UserMapper.mapToDto(created));
+    public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto dto) {
+        // 1) DTO → Entity
+        User toCreate = UserMapper.fromDtoForCreate(dto);
+
+        // 2) Service works purely on the User entity
+        User created  = userService.register(toCreate);
+
+        // 3) Entity → DTO for the response
+        UserDto responseDto = UserMapper.mapToDto(created);
+        return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("/{id}")

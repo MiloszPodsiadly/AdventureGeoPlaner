@@ -1,28 +1,35 @@
+
 package com.milosz.podsiadly.mapper;
 
 import com.milosz.podsiadly.dto.UserDto;
 import com.milosz.podsiadly.model.User;
 
-import java.util.List;
-
 public class UserMapper {
 
-    public static UserDto mapToDto(User user) {
+    /** Entity → DTO : expose every field (password omitted) */
+    public static UserDto mapToDto(User u) {
         return new UserDto(
-                user.getId(),
-                user.getEmail(),
-                user.getDisplayName(),
-                user.getSpotifyId(),
-                user.getProvider(),
-                user.getRole(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
+                u.getId(),
+                u.getEmail(),
+                null,
+                u.getDisplayName(),
+                u.getSpotifyId(),
+                u.getProvider(),
+                u.getRole(),
+                u.getSpotifyAccessToken(),
+                u.getSpotifyRefreshToken(),
+                u.getSpotifyTokenExpiresAt(),
+                u.getCreatedAt(),
+                u.getUpdatedAt()
         );
     }
 
-    public static List<UserDto> mapToDtoList(List<User> users) {
-        return users.stream()
-                .map(UserMapper::mapToDto)
-                .toList();
+    /** DTO → Entity : only for initial registration */
+    public static User fromDtoForCreate(UserDto dto) {
+        return User.builder()
+                .email(dto.email())
+                .password(dto.password())     // raw, will be encoded
+                .displayName(dto.displayName())
+                .build();
     }
 }
