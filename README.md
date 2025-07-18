@@ -1,13 +1,13 @@
 In progress...
 
-TripPlan is center of an app
-pattern builder
-join columns from below
-starting from city
-step by step adding
-nominatim should create route
-nominatim can create trip having city
-also can build us private tripplan
+-TripPlan is center of an app
+-pattern builder
+-join columns from below
+-starting from city
+-step by step adding
+-nominatim should create route
+-nominatim can create trip having city
+- can build us private tripplan
 
 What done 
 // OAuth 2 - spotify - checked returning playlists
