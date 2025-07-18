@@ -72,6 +72,20 @@ public class TripPlanService {
         return tripPlanRepository.save(plan);
     }
 
+    @Transactional
+    public TripPlan assignPlaylistToPlan(Long planId, Long spotifyPlaylistId) {
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("TripPlan not found: " + planId));
+
+        SpotifyPlaylist playlist = playlistRepository.findById(spotifyPlaylistId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "SpotifyPlaylist not found: " + spotifyPlaylistId));
+
+        plan.setSpotifyPlaylist(playlist);
+        // other fields (places, route) stay as-is (null/empty) until you import or compute them
+        return tripPlanRepository.save(plan);
+    }
+
     public List<TripPlan> getAllPlans() {
         return tripPlanRepository.findAll();
     }

@@ -46,6 +46,15 @@ public class TripPlanController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/{planId}/playlist/{playlistId}")
+    public ResponseEntity<TripPlanDto> assignPlaylist(
+            @PathVariable Long planId,
+            @PathVariable Long playlistId) {
+
+        TripPlan updated = tripPlanService.assignPlaylistToPlan(planId, playlistId);
+        return ResponseEntity.ok(TripPlanMapper.mapToDto(updated));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TripPlanDto> getById(@PathVariable Long id) {
         TripPlan plan = tripPlanService.getTripPlanById(id);
