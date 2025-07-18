@@ -33,7 +33,7 @@ public class NominatimService {
         this.placeRepository    = placeRepository;
     }
 
-    /**
+    /*
      * Look up “tourist attractions” in the given city, then save them
      * as Place entities on the TripPlan with the given ID.
      */

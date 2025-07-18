@@ -13,6 +13,11 @@ What done
 // OAuth 2 - spotify - checked returning playlists
 // Nominatim implemented, ready to check
 // preapring for nominatim routes
+// preparing to add ready schemas (Liquibase or Flyway)
+
+## What TODO:
+- Overpass API for more attractions
+- think about host nominatim and overpass  (if more users)
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
