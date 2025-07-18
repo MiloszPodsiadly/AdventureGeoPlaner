@@ -68,6 +68,7 @@ public class UserService {
                     .substring(0, 10);
         } while (userRepository.existsBySpotifyId(spotifyId));
 
+        user.setSpotifyId(spotifyId);
         // 5) Encode the raw password:
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
