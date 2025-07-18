@@ -22,4 +22,6 @@ To contribute
 3. Commit your changes: git commit -m 'Add some feature'
 4. Push to your branch: git push origin feature/YourFeature
 5. Open a Pull Request
+
 Please follow the [Contributor Covenant](https://www.contributor-covenant.org/) code of conduct.
+
