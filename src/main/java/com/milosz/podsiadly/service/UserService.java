@@ -60,7 +60,13 @@ public class UserService {
         // 4) Populate defaults & generated values:
         user.setProvider("LOCAL");
         user.setRole("USER");
-        user.setSpotifyId(UUID.randomUUID().toString());
+        String spotifyId;
+        do {
+            spotifyId = UUID.randomUUID()
+                    .toString()
+                    .replace("-", "")
+                    .substring(0, 10);
+        } while (userRepository.existsBySpotifyId(spotifyId));
 
         // 5) Encode the raw password:
         user.setPassword(passwordEncoder.encode(user.getPassword()));
