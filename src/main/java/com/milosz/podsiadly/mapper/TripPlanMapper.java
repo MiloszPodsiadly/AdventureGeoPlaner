@@ -27,4 +27,13 @@ public class TripPlanMapper {
                 .map(TripPlanMapper::mapToDto)
                 .toList();
     }
+    /** DTO → bare Entity (only fields we set here) */
+    public static TripPlan toEntity(TripPlanDto dto) {
+        return TripPlan.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .date(dto.date())
+                // city, user, route, playlist are set in the service
+                .build();
+    }
 }

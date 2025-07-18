@@ -2,6 +2,7 @@ package com.milosz.podsiadly.controller;
 
 import com.milosz.podsiadly.dto.TripPlanDto;
 import com.milosz.podsiadly.mapper.TripPlanMapper;
+import com.milosz.podsiadly.model.Place;
 import com.milosz.podsiadly.model.Route;
 import com.milosz.podsiadly.model.TripPlan;
 import com.milosz.podsiadly.service.TripPlanService;
@@ -22,6 +23,27 @@ public class TripPlanController {
     public ResponseEntity<List<TripPlanDto>> getAll() {
         var plans = tripPlanService.getAllPlans();
         return ResponseEntity.ok(plans.stream().map(TripPlanMapper::mapToDto).toList());
+    }
+
+    /**
+     * POST /api/trip-plans/{planId}/places/import?limit=5
+     */
+    @PostMapping("/{planId}/places/import")
+    public ResponseEntity<List<Place>> importPlaces(
+            @PathVariable Long planId,
+            @RequestParam(defaultValue = "5") int limit) {
+        List<Place> places = tripPlanService.importPopularPlaces(planId, limit);
+        return ResponseEntity.ok(places);
+    }
+
+    /**
+     * POST /api/trip-plans/{planId}/route
+     */
+    @PostMapping("/{planId}/route")
+    public ResponseEntity<TripPlan> assignRoute(
+            @PathVariable Long planId) {
+        TripPlan updated = tripPlanService.calculateAndAssignRoute(planId);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/{id}")

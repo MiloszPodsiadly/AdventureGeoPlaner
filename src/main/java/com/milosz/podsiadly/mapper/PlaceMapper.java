@@ -5,49 +5,52 @@ import com.milosz.podsiadly.dto.PlaceDto;
 import com.milosz.podsiadly.model.LatLon;
 import com.milosz.podsiadly.model.Place;
 import com.milosz.podsiadly.model.PlaceType;
-import com.milosz.podsiadly.model.TripPlan;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Component
 public class PlaceMapper {
 
-    public PlaceDto mapToDto(Place place) {
+    /** Entity → DTO */
+    public static PlaceDto toDto(Place p) {
         return new PlaceDto(
-                place.getId(),
-                place.getName(),
-                place.getDescription(),
-                place.getType().name(),
-                place.getLocation() != null
-                        ? new LatLonDto(place.getLocation().getLat(), place.getLocation().getLon())
-                        : null,
-                place.getOrderIndex(),
-                place.isFavorite(),
-                place.getTripPlan() != null ? place.getTripPlan().getId() : null
+                p.getId(),
+                p.getName(),
+                p.getDescription(),
+                p.getType().name(),
+                new LatLonDto(p.getLocation().getLat(), p.getLocation().getLon()),
+                p.getOrderIndex(),
+                p.isFavorite(),
+                p.getTripPlan() != null ? p.getTripPlan().getId() : null
         );
     }
 
-    public List<PlaceDto> mapToDtoList(List<Place> places) {
+    /** Map a list of entities → list of DTOs */
+    public static List<PlaceDto> toDtoList(List<Place> places) {
         return places.stream()
-                .map(this::mapToDto)
-                .toList();
+                .map(PlaceMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Place mapToEntity(PlaceDto dto) {
+    /** DTO → Entity (for creation/update) */
+    public static Place fromDto(PlaceDto dto) {
+        PlaceType type = dto.type() != null
+                ? PlaceType.valueOf(dto.type())
+                : PlaceType.ATTRACTION;
+
+        LatLon latLon = new LatLon(
+                dto.location().lat(),
+                dto.location().lon()
+        );
+
         return Place.builder()
                 .id(dto.id())
                 .name(dto.name())
                 .description(dto.description())
-                .type(PlaceType.valueOf(dto.type()))
-                .location(dto.location() != null
-                        ? new LatLon(dto.location().lat(), dto.location().lon())
-                        : null)
-                .orderIndex(dto.orderIndex() != null ? dto.orderIndex() : 0)
+                .type(type)
+                .location(latLon)
+                .orderIndex(dto.orderIndex())
                 .favorite(dto.isFavorite())
-                .tripPlan(dto.tripPlanId() != null
-                        ? TripPlan.builder().id(dto.tripPlanId()).build()
-                        : null)
                 .build();
     }
 }

@@ -89,5 +89,4 @@ public class NominatimService {
         trip.getPlaces().addAll(places);
         return placeRepository.saveAll(places);
     }
-
 }

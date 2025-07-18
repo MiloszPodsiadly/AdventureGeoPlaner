@@ -1,5 +1,6 @@
 package com.milosz.podsiadly.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.milosz.podsiadly.model.*;
 import com.milosz.podsiadly.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,6 +22,55 @@ public class TripPlanService {
     private final UserRepository userRepository;
     private final RouteRepository routeRepository;
     private final SpotifyPlaylistRepository playlistRepository;
+    private final NominatimService nominatimService;
+    private final OsrmRoutingService routingService;
+
+    @Transactional
+    public List<Place> importPopularPlaces(Long planId, int limit) {
+        // simply delegate to your NominatimService
+        return nominatimService.importPopularPlaces(planId, limit);
+    }
+
+    /**
+     * 🔁 Compute a driving route from first to last place in the plan,
+     *     persist it, and link it into the TripPlan.
+     */
+    @Transactional
+    public TripPlan calculateAndAssignRoute(Long planId) {
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("TripPlan not found: " + planId));
+
+        List<Place> places = plan.getPlaces();
+        if (places.size() < 2) {
+            throw new IllegalArgumentException("Need at least 2 places to compute a route");
+        }
+
+        LatLon start = places.get(0).getLocation();
+        LatLon end   = places.get(places.size() - 1).getLocation();
+
+        // call OSRM
+        JsonNode resp = routingService.getRoute(start, end);
+        JsonNode routeNode = resp.path("routes").get(0);
+
+        double distance = routeNode.path("distance").asDouble();
+        double duration = routeNode.path("duration").asDouble();
+        String pathJson = routeNode.path("geometry").toString();
+
+        // build & save Route
+        Route route = Route.builder()
+                .start(start)
+                .end(end)
+                .distance(distance)
+                .duration(duration)
+                .pathJson(pathJson)
+                .build();
+
+        route = routeRepository.save(route);
+
+        // link into TripPlan
+        plan.setRoute(route);
+        return tripPlanRepository.save(plan);
+    }
 
     public List<TripPlan> getAllPlans() {
         return tripPlanRepository.findAll();

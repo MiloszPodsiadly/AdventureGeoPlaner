@@ -4,6 +4,7 @@ import com.milosz.podsiadly.dto.CityDto;
 import com.milosz.podsiadly.mapper.CityMapper;
 import com.milosz.podsiadly.model.City;
 import com.milosz.podsiadly.service.CityService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class CityController {
     public ResponseEntity<List<CityDto>> getAllCities() {
         return ResponseEntity.ok(
                 cityService.getAllCities().stream()
-                        .map(CityMapper::mapToDto)
+                        .map(CityMapper::toDto)
                         .toList()
         );
     }
@@ -31,21 +32,21 @@ public class CityController {
     @GetMapping("/{id}")
     public ResponseEntity<CityDto> getCityById(@PathVariable Long id) {
         City city = cityService.getCityById(id);
-        return ResponseEntity.ok(CityMapper.mapToDto(city));
+        return ResponseEntity.ok(CityMapper.toDto(city));
     }
 
     // ➕ POST
     @PostMapping
     public ResponseEntity<CityDto> createCity(@RequestBody City city) {
         City created = cityService.createCity(city);
-        return ResponseEntity.ok(CityMapper.mapToDto(created));
+        return ResponseEntity.ok(CityMapper.toDto(created));
     }
 
     // ✏️ PUT
     @PutMapping("/{id}")
     public ResponseEntity<CityDto> updateCity(@PathVariable Long id, @RequestBody City updatedCity) {
         City city = cityService.updateCity(id, updatedCity);
-        return ResponseEntity.ok(CityMapper.mapToDto(city));
+        return ResponseEntity.ok(CityMapper.toDto(city));
     }
 
     // ❌ DELETE
@@ -59,6 +60,7 @@ public class CityController {
     @GetMapping("/resolve")
     public ResponseEntity<CityDto> getOrFetchCity(@RequestParam String name, @RequestParam String country) {
         City city = cityService.getOrFetchCity(name, country);
-        return ResponseEntity.ok(CityMapper.mapToDto(city));
+        return ResponseEntity.ok(CityMapper.toDto(city));
     }
+
 }

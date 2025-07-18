@@ -2,6 +2,8 @@
 package com.milosz.podsiadly.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.milosz.podsiadly.dto.PlaceDto;
+import com.milosz.podsiadly.mapper.PlaceMapper;
 import com.milosz.podsiadly.model.Place;
 import com.milosz.podsiadly.service.NominatimService;
 import com.milosz.podsiadly.service.OsrmRoutingService;
@@ -23,12 +25,15 @@ public class GeoController {
      * Import the top N “tourist attractions” for your TripPlan into the DB.
      */
     @PostMapping("/trip-plans/{tripPlanId}/places/import")
-    public ResponseEntity<List<Place>> importPlaces(
+    public ResponseEntity<List<PlaceDto>> importPlaces(
             @PathVariable Long tripPlanId,
             @RequestParam(defaultValue="5") int limit) {
 
         List<Place> places = nominatimService.importPopularPlaces(tripPlanId, limit);
-        return ResponseEntity.ok(places);
+        List<PlaceDto> dtos = places.stream()
+                .map(PlaceMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     /**
