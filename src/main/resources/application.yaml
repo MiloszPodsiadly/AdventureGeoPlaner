@@ -186,3 +186,4 @@ debug: false
 
 nominatim:
   user-agent: trip-planner-docker/1.0 (docker@mydomain.com)
+

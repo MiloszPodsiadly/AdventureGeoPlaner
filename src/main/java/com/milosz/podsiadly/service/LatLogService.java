@@ -1,8 +1,8 @@
 package com.milosz.podsiadly.service;
 
 import com.milosz.podsiadly.model.LatLon;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -11,20 +11,19 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
 
-/**
- * Service pomocniczy do obsługi geolokalizacji, map, dystansów i integracji z API zewnętrznymi (np. Nominatim, Google).
- */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class LatLogService {
 
     private final WebClient webClient;
-
     private static final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
+    public LatLogService(@Qualifier("nominatimWebClient") WebClient webClient) {
+        this.webClient = webClient;
+    }
+
     /**
-     * Geokodowanie – pobiera współrzędne dla podanego adresu (nazwa ulicy, miasta itp.)
+     * Geokodowanie – pobiera współrzędne dla podanego adresu.
      */
     public Optional<LatLon> getCoordinatesForAddress(String address) {
         if (address == null || address.isBlank()) {
